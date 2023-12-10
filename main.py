@@ -11,7 +11,7 @@ DIR_GO = "go"
 def create_dirs(path, type):
     full_dir = os.path.join(path, type.capitalize())
     if not os.path.exists(full_dir):
-        os.mkdir(full_dir)
+        os.makedirs(full_dir)
 
 
 def get_apps_name(paths, to_trim):
@@ -44,6 +44,15 @@ def copy(source, dest):
     shutil.copytree(source, dest)
 
 
+def copy_files(paths, dir_names, dest_path, sub_dir_name):
+    for source, dest in zip(paths, dir_names):
+        output_dest_path = os.path.join(
+            dest_path, sub_dir_name.capitalize(), dest)
+        print(output_dest_path)
+
+        copy(source, output_dest_path)
+
+
 def main(source, dest):
     cwd = os.getcwd()
     source_path = os.path.join(cwd, source)
@@ -53,7 +62,8 @@ def main(source, dest):
     create_dirs(dest_path, DIR_GO)
     java_apps_names = get_apps_name(java_paths, "_Java")
     go_apps_names = get_apps_name(go_paths, "_Go")
-    print(java_apps_names, "\n", go_apps_names)
+    copy_files(java_paths, java_apps_names, dest_path, DIR_JAVA)
+    copy_files(go_paths, go_apps_names, dest_path, DIR_GO)
 
 
 if __name__ == "__main__":
