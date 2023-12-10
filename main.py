@@ -48,13 +48,13 @@ def copy(source, dest):
     shutil.copytree(source, dest)
 
 
-def copy_files(paths, dir_names, dest_path, sub_dir_name):
+def copy_files_and_compile(paths, dir_names, dest_path, sub_dir_name, compile_instr, file_extension):
     for source, dest in zip(paths, dir_names):
         output_dest_path = os.path.join(
             dest_path, sub_dir_name.capitalize(), dest)
-        print(output_dest_path)
 
         copy(source, output_dest_path)
+        compile_code(output_dest_path, compile_instr, file_extension)
 
 
 def compile_code(path, compile_instr, file_extension):
@@ -73,11 +73,9 @@ def compile_code(path, compile_instr, file_extension):
 
 
 def run_cmd(command, path):
-    cwd = os.getcwd
+    cwd = os.getcwd()
     os.chdir(path)
     output = run(command, stdout=PIPE, stdin=PIPE, universal_newlines=True)
-    print(output)
-
     os.chdir(cwd)
 
 
@@ -85,17 +83,16 @@ def main(source, dest):
     cwd = os.getcwd()
     source_path = os.path.join(cwd, source)
     dest_path = os.path.join(cwd, dest)
+    #
     java_paths, go_paths = get_all_apps_dirs(source_path)
     create_dirs(dest_path, DIR_JAVA)
     create_dirs(dest_path, DIR_GO)
     java_apps_names = get_apps_name(java_paths, "_Java")
     go_apps_names = get_apps_name(go_paths, "_Go")
-    copy_files(java_paths, java_apps_names, dest_path, DIR_JAVA)
-    copy_files(go_paths, go_apps_names, dest_path, DIR_GO)
-    compile_code(os.path.join(dest_path, DIR_JAVA.capitalize()),
-                 JAVA_COMPILE_COMMAND, JAVA_FILE_EXTENSION)
-    compile_code(os.path.join(dest_path, DIR_GO.capitalize()),
-                 GO_COMPILE_COMMAND, GO_FILE_EXTENSION)
+    copy_files_and_compile(java_paths, java_apps_names, dest_path,
+                           DIR_JAVA, JAVA_COMPILE_COMMAND, JAVA_FILE_EXTENSION)
+    copy_files_and_compile(go_paths, go_apps_names, dest_path,
+                           DIR_GO, GO_COMPILE_COMMAND, GO_FILE_EXTENSION)
 
 
 if __name__ == "__main__":
