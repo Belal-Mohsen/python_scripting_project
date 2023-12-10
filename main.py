@@ -6,6 +6,10 @@ import sys
 
 DIR_JAVA = "java"
 DIR_GO = "go"
+GO_FILE_EXTENSION = ".go"
+JAVA_FILE_EXTENSION = ".java"
+GO_COMPILE_COMMAND = ["go", "build"]
+JAVA_COMPILE_COMMAND = ["javac"]
 
 
 def create_dirs(path, type):
@@ -53,6 +57,30 @@ def copy_files(paths, dir_names, dest_path, sub_dir_name):
         copy(source, output_dest_path)
 
 
+def compile_code(path, compile_instr, file_extension):
+    source_code_file_name = None
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(file_extension):
+                source_code_file_name = file
+                break
+        break
+
+    if source_code_file_name is None:
+        return
+    command = compile_instr + [source_code_file_name]
+    run_cmd(command, path)
+
+
+def run_cmd(command, path):
+    cwd = os.getcwd
+    os.chdir(path)
+    output = run(command, stdout=PIPE, stdin=PIPE, universal_newlines=True)
+    print(output)
+
+    os.chdir(cwd)
+
+
 def main(source, dest):
     cwd = os.getcwd()
     source_path = os.path.join(cwd, source)
@@ -64,6 +92,10 @@ def main(source, dest):
     go_apps_names = get_apps_name(go_paths, "_Go")
     copy_files(java_paths, java_apps_names, dest_path, DIR_JAVA)
     copy_files(go_paths, go_apps_names, dest_path, DIR_GO)
+    compile_code(os.path.join(dest_path, DIR_JAVA.capitalize()),
+                 JAVA_COMPILE_COMMAND, JAVA_FILE_EXTENSION)
+    compile_code(os.path.join(dest_path, DIR_GO.capitalize()),
+                 GO_COMPILE_COMMAND, GO_FILE_EXTENSION)
 
 
 if __name__ == "__main__":
